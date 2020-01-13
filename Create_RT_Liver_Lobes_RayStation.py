@@ -1,6 +1,6 @@
 import os
 from connect import *
-import time
+import time, getpass
 
 
 class create_RT_Structure():
@@ -126,8 +126,11 @@ class create_RT_Structure():
         if os.path.exists(dicom_dir):
             files = os.listdir(dicom_dir)
             for file in files:
-                os.remove(os.path.join(dicom_dir,file))
-            os.rmdir(dicom_dir)
+                if file.find('user_') != 0:
+                    os.remove(os.path.join(dicom_dir,file))
+            un = getpass.getuser()
+            fid = open(os.path.join(dicom_dir,'user_{}.txt'.format(un)),'w+')
+            fid.close()
         return None
 if __name__ == "__main__":
     class_struct = create_RT_Structure(roi_name='Liver_Segments')
