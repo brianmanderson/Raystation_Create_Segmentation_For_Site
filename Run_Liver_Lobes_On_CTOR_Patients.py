@@ -63,7 +63,7 @@ class create_RT_Structure():
                 if self.case.PatientModel.StructureSets[exam.Name].RoiGeometries[actual_roi_name].HasContours():
                     self.has_liver = True
                     break
-        if self.has_contours:
+        if self.has_contours or not self.has_liver:
             return None
         self.patient.Save()
         self.Export_Dicom(exam,self.path)
@@ -142,4 +142,6 @@ class create_RT_Structure():
         return None
 if __name__ == "__main__":
     class_struct = create_RT_Structure(roi_name='Liver_Segments')
-    class_struct.create_RT_Liver(class_struct.exam)
+    for exam in class_struct.case.Examinations:
+        if exam.Name.find('CTOR') != -1 or exam.Name.find('Primary') != -1:
+            class_struct.create_RT_Liver(exam)
