@@ -29,10 +29,8 @@ class create_RT_Structure():
         print('did not find a patient')
     def create_RT_Liver(self, exam):
         self.export(exam)
-        if not self.has_contours and self.has_liver:
+        if not self.has_contours:
             self.import_data(exam)
-        elif not self.has_liver:
-            print('Need a liver contour called Liver or Liver_BMA_Program_4')
         else:
             print('Already has contours defined')
 
@@ -57,12 +55,14 @@ class create_RT_Structure():
             else:
                 self.has_contours = False
                 break
-        self.has_liver = False
+        has_liver = False
         for actual_roi_name in ['Liver','Liver_BMA_Program_4']:
-            if actual_roi_name in self.rois_in_case:
-                if self.case.PatientModel.StructureSets[exam.Name].RoiGeometries[actual_roi_name].HasContours():
-                    self.has_liver = True
-                    break
+            if self.case.PatientModel.StructureSets[exam.Name].RoiGeometries[actual_roi_name].HasContours():
+                has_liver = True
+                break
+        if not has_liver:
+            print('You need a contour named Liver or Liver_BMA_Program_4')
+            self.has_contours = True
         if self.has_contours:
             return None
         self.patient.Save()
