@@ -57,9 +57,10 @@ class create_RT_Structure():
                 break
         has_liver = False
         for actual_roi_name in ['Liver','Liver_BMA_Program_4']:
-            if self.case.PatientModel.StructureSets[exam.Name].RoiGeometries[actual_roi_name].HasContours():
-                has_liver = True
-                break
+            if actual_roi_name in self.rois_in_case:
+                if self.case.PatientModel.StructureSets[exam.Name].RoiGeometries[actual_roi_name].HasContours():
+                    has_liver = True
+                    break
         if not has_liver:
             print('You need a contour named Liver or Liver_BMA_Program_4')
             self.has_contours = True
