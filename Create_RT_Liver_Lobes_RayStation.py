@@ -98,8 +98,6 @@ class create_RT_Structure():
             os.makedirs(export_path)
         print(export_path)
         if not os.path.exists(os.path.join(export_path,'Completed.txt')):
-            fid = open(os.path.join(path,'Raystation_Export.txt'),'w+')
-            fid.close()
             self.case.ScriptableDicomExport(ExportFolderPath=export_path, Examinations=[exam.Name],
                                             RtStructureSetsForExaminations=[exam.Name])
             fid = open(os.path.join(export_path,'Completed.txt'),'w+')
