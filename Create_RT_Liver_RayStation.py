@@ -36,7 +36,7 @@ class create_RT_Structure():
 
     def export(self, exam):
         roi_name = self.roi_name
-        actual_roi_name = roi_name + self.version_name
+        actual_roi_name = self.roi_name + self.version_name
         roi_name += '_Auto_Contour'
         self.MRN = self.patient.PatientID
         self.base_path = '\\\\mymdafiles\\ou-radonc\\Raystation\\Clinical\\Auto_Contour_Sites\\'
