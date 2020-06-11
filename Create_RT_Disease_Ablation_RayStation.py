@@ -15,6 +15,7 @@ class create_RT_Structure():
             self.MRN = self.patient.PatientID
         except:
             xxx = 1
+
     def ChangePatient(self, MRN):
         print('got here')
         self.MRN = MRN
@@ -27,6 +28,7 @@ class create_RT_Structure():
                 self.MRN = self.patient.PatientID
                 return None
         print('did not find a patient')
+
     def create_RT_Liver(self, exam):
         self.export(exam)
         if not self.has_contours:
@@ -38,6 +40,7 @@ class create_RT_Structure():
         self.rois_in_case = []
         for roi in self.case.PatientModel.RegionsOfInterest:
             self.rois_in_case.append(roi.Name)
+
     def export(self, exam):
         self.get_rois_in_case()
         roi_name = self.roi_name
@@ -95,6 +98,7 @@ class create_RT_Structure():
                     self.simplify_contours(exam,actual_roi_name)
         self.cleanout_folder(output_path)
         return None
+
     def simplify_contours(self, exam, roi_name):
         self.case.PatientModel.StructureSets[exam.Name].SimplifyContours(
             RoiNames=[roi_name], RemoveHoles3D=False, RemoveSmallContours=True,
@@ -120,6 +124,7 @@ class create_RT_Structure():
             fid = open(os.path.join(export_path,'Completed.txt'),'w+')
             fid.close()
         return None
+
     def check_folder(self,output_path):
         print(output_path)
         while not os.path.exists(output_path):
@@ -130,6 +135,7 @@ class create_RT_Structure():
         if os.path.exists(os.path.join(output_path,'Completed.txt')):
             self.import_RT = True
         return None
+
     def importRT(self,file_path):
         try:
             self.patient.ImportDicomDataFromPath(Path=file_path,CaseName=self.case.CaseName,SeriesFilter={},ImportFilters=[])
@@ -156,6 +162,8 @@ class create_RT_Structure():
             fid = open(os.path.join(dicom_dir,'user_{}.txt'.format(un)),'w+')
             fid.close()
         return None
+
+
 if __name__ == "__main__":
     class_struct = create_RT_Structure(roi_name='Liver_Disease_Ablation')
     class_struct.create_RT_Liver(class_struct.exam)
