@@ -1,5 +1,6 @@
 import os
 from connect import *
+from connect import set_progress
 import time, getpass
 
 
@@ -37,6 +38,7 @@ class create_RT_Structure():
     def export(self, exam):
         roi_name = self.roi_name
         actual_roi_name = roi_name + self.version_name
+        set_progress('Checking to see if {} already has contours'.format(actual_roi_name))
         roi_name += '_Auto_Contour'
         self.MRN = self.patient.PatientID
         self.base_path = '\\\\mymdafiles\\ou-radonc\\Raystation\\Clinical\\Auto_Contour_Sites\\'
@@ -47,7 +49,6 @@ class create_RT_Structure():
             self.rois_in_case.append(roi.Name)
         self.patient.Save()
         self.has_contours = False
-        set_progress('Checking to see if {} already has contours'.format(actual_roi_name))
         if actual_roi_name in self.rois_in_case:
             if self.case.PatientModel.StructureSets[exam.Name].RoiGeometries[actual_roi_name].HasContours():
                 self.has_contours = True
@@ -91,6 +92,12 @@ class create_RT_Structure():
             fid.close()
         set_progress('Finished exporting, waiting in queue')
         return None
+
+    def update_progress(self, output_path):
+        files = [i for i in os.listdir(output_path) if i.startswith('Status')]
+        for file in files:
+            set_progress('{}'.format(file.split('Status_')[-1].split('.txt')[0]))
+
     def check_folder(self,output_path):
         print(output_path)
         while not os.path.exists(output_path):
@@ -98,9 +105,12 @@ class create_RT_Structure():
         print('path exists, waiting for file')
         while not os.path.exists(os.path.join(output_path,'Completed.txt')) and not os.path.exists(os.path.join(output_path,'Failed.txt')):
             time.sleep(1)
+            self.update_progress(output_path)
         if os.path.exists(os.path.join(output_path,'Completed.txt')):
             self.import_RT = True
+            set_progress('Importing RT Structures')
         return None
+
     def importRT(self,file_path):
         try:
             self.patient.ImportDicomDataFromPath(Path=file_path,CaseName=self.case.CaseName,SeriesFilter={},ImportFilters=[])
@@ -119,13 +129,15 @@ class create_RT_Structure():
     def cleanout_folder(self,dicom_dir):
         print('Cleaning up: Removing imported DICOMs, please check output folder for result')
         if os.path.exists(dicom_dir):
-            files = [i for i in os.listdir(dicom_dir) if i.endswith('.dcm')]
+            files = [i for i in os.listdir(dicom_dir) if i.endswith('.dcm') or i.startswith('Status') or i.startswith('Completed') or i.startswith('Failed')]
             for file in files:
                 os.remove(os.path.join(dicom_dir,file))
             un = getpass.getuser()
             fid = open(os.path.join(dicom_dir,'user_{}.txt'.format(un)),'w+')
             fid.close()
         return None
+
+
 if __name__ == "__main__":
     class_struct = create_RT_Structure(roi_name='Liver')
     class_struct.create_RT_Liver(class_struct.exam)
