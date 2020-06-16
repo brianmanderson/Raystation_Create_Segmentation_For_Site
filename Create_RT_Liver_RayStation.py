@@ -47,6 +47,7 @@ class create_RT_Structure():
             self.rois_in_case.append(roi.Name)
         self.patient.Save()
         self.has_contours = False
+        set_progress('Checking to see if {} already has contours'.format(actual_roi_name))
         if actual_roi_name in self.rois_in_case:
             if self.case.PatientModel.StructureSets[exam.Name].RoiGeometries[actual_roi_name].HasContours():
                 self.has_contours = True
@@ -82,11 +83,13 @@ class create_RT_Structure():
         if not os.path.exists(export_path):
             print('making path')
             os.makedirs(export_path)
+        set_progress('Exporting dicom series')
         if not os.path.exists(os.path.join(export_path,'Completed.txt')):
             self.case.ScriptableDicomExport(ExportFolderPath=export_path, Examinations=[exam.Name],
                                             RtStructureSetsForExaminations=[])
             fid = open(os.path.join(export_path,'Completed.txt'),'w+')
             fid.close()
+        set_progress('Finished exporting, waiting in queue')
         return None
     def check_folder(self,output_path):
         print(output_path)
@@ -116,10 +119,9 @@ class create_RT_Structure():
     def cleanout_folder(self,dicom_dir):
         print('Cleaning up: Removing imported DICOMs, please check output folder for result')
         if os.path.exists(dicom_dir):
-            files = os.listdir(dicom_dir)
+            files = [i for i in os.listdir(dicom_dir) if i.endswith('.dcm')]
             for file in files:
-                if file.find('user_') != 0:
-                    os.remove(os.path.join(dicom_dir,file))
+                os.remove(os.path.join(dicom_dir,file))
             un = getpass.getuser()
             fid = open(os.path.join(dicom_dir,'user_{}.txt'.format(un)),'w+')
             fid.close()
