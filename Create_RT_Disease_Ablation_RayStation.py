@@ -50,7 +50,8 @@ class create_RT_Structure():
         #if not check_any_contours(case,exam): Doesn't work the way I want it to
         self.path = os.path.join(self.base_path,roi_name,'Input_3',self.MRN)
         self.patient.Save()
-        actual_roi_names = ['Liver_Disease_Ablation_BMAProgram0']
+        self.exported = False
+        actual_roi_names = [self.roi_name + self.version_name]
         self.has_contours = True
         for actual_roi_name in actual_roi_names:
             set_progress('Checking to see if {} already has contours'.format(actual_roi_name))
