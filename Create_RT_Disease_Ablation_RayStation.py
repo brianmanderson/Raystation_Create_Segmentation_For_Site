@@ -53,6 +53,7 @@ class create_RT_Structure():
         actual_roi_names = ['Liver_Disease_Ablation_BMAProgram0']
         self.has_contours = True
         for actual_roi_name in actual_roi_names:
+            set_progress('Checking to see if {} already has contours'.format(actual_roi_name))
             if actual_roi_name in self.rois_in_case:
                 if not self.case.PatientModel.StructureSets[exam.Name].RoiGeometries[actual_roi_name].HasContours():
                     self.has_contours = False
@@ -116,13 +117,20 @@ class create_RT_Structure():
         if not os.path.exists(export_path):
             print('making path')
             os.makedirs(export_path)
+        set_progress('Exporting dicom series')
         print(export_path)
         if not os.path.exists(os.path.join(export_path,'Completed.txt')):
             self.case.ScriptableDicomExport(ExportFolderPath=export_path, Examinations=[exam.Name],
                                             RtStructureSetsForExaminations=[exam.Name])
             fid = open(os.path.join(export_path,'Completed.txt'),'w+')
             fid.close()
+        set_progress('Finished exporting, waiting in queue')
         return None
+
+    def update_progress(self, output_path):
+        files = [i for i in os.listdir(output_path) if i.startswith('Status')]
+        for file in files:
+            set_progress('{}'.format(file.split('Status_')[-1].split('.txt')[0]))
 
     def check_folder(self,output_path):
         print(output_path)
@@ -131,8 +139,10 @@ class create_RT_Structure():
         print('path exists, waiting for file')
         while not os.path.exists(os.path.join(output_path,'Completed.txt')) and not os.path.exists(os.path.join(output_path,'Failed.txt')):
             time.sleep(1)
+            self.update_progress(output_path)
         if os.path.exists(os.path.join(output_path,'Completed.txt')):
             self.import_RT = True
+            set_progress('Importing RT Structures')
         return None
 
     def importRT(self,file_path):
@@ -153,10 +163,9 @@ class create_RT_Structure():
     def cleanout_folder(self,dicom_dir):
         print('Cleaning up: Removing imported DICOMs, please check output folder for result')
         if os.path.exists(dicom_dir):
-            files = os.listdir(dicom_dir)
+            files = [i for i in os.listdir(dicom_dir) if not i.startswith('user_')]
             for file in files:
-                if file.find('user_') != 0:
-                    os.remove(os.path.join(dicom_dir,file))
+                os.remove(os.path.join(dicom_dir,file))
             un = getpass.getuser()
             fid = open(os.path.join(dicom_dir,'user_{}.txt'.format(un)),'w+')
             fid.close()

@@ -129,7 +129,7 @@ class create_RT_Structure():
     def cleanout_folder(self,dicom_dir):
         print('Cleaning up: Removing imported DICOMs, please check output folder for result')
         if os.path.exists(dicom_dir):
-            files = [i for i in os.listdir(dicom_dir) if i.endswith('.dcm') or i.startswith('Status') or i.startswith('Completed') or i.startswith('Failed')]
+            files = [i for i in os.listdir(dicom_dir) if not i.startswith('user_')]
             for file in files:
                 os.remove(os.path.join(dicom_dir,file))
             un = getpass.getuser()
