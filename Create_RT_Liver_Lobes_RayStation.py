@@ -45,7 +45,8 @@ class create_RT_Structure():
         for roi in self.case.PatientModel.RegionsOfInterest:
             self.rois_in_case.append(roi.Name)
         self.patient.Save()
-        actual_roi_names = ['Liver_Segment_{}_BMAProgram0'.format(i) for i in range(1, 9)]
+        actual_roi_names = ['Liver_Segment_{}_BMAProgram3'.format(i) for i in range(1, 5)]
+        actual_roi_names = ['Liver_Segment_5-8_BMAProgram3']
         self.has_contours = True
         for actual_roi_name in actual_roi_names:
             set_progress('Checking to see if {} already has contours'.format(actual_roi_name))
