@@ -9,6 +9,10 @@ class create_RT_Structure():
         self.roi_name = roi_name
         self.version_name = '_BMA_Program_4'
         self.base_path = '\\\\mymdafiles\\ou-radonc\\Raystation\\Clinical\\Auto_Contour_Sites\\'
+        try:
+            os.listdir(self.base_path)
+        except:
+            self.base_path = '\\\\mymdafiles\\ou-radonc\\Raystation\\Research\\Auto_Contour_Sites\\'
         self.has_contours = False
         try:
             self.patient_db = get_current('PatientDB')
