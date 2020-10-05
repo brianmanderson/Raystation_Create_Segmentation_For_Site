@@ -73,32 +73,28 @@ class create_RT_Structure():
         if self.has_contours:
             return None
         self.patient.Save()
-        self.Export_Dicom(exam,self.path)
+        self.cleanout_folder(exam)
+        self.Export_Dicom(exam)
 
     def import_data(self, exam):
-        roi_name = self.roi_name
-        actual_roi_name = roi_name + self.version_name
-        roi_name += '_Auto_Contour'
-        if actual_roi_name in self.rois_in_case:
-            if self.case.PatientModel.StructureSets[exam.Name].RoiGeometries[actual_roi_name].HasContours():
-                return None # Already have the contours for this patient
-        data = exam.GetAcquisitionDataFromDicom()
-        SeriesUID = data['SeriesModule']['SeriesInstanceUID']
-        output_path = os.path.join(self.base_path,roi_name,'Output',self.MRN,SeriesUID)
-        self.cleanout_folder(output_path)
+        if self.roi_name + self.version_name in self.rois_in_case:
+            if self.case.PatientModel.StructureSets[exam.Name].RoiGeometries[self.roi_name +
+                                                                             self.version_name].HasContours():
+                return None  # Already have the contours for this patient
+        self.cleanout_folder(exam)
         print('Now waiting for RS to be made')
         self.import_RT = False
-        self.check_folder(output_path)
+        self.check_folder(exam)
         print('Import RT structure!')
         if self.import_RT:
-            self.importRT(output_path)
-        self.cleanout_folder(output_path)
+            self.importRT(exam)
+        self.cleanout_folder(exam)
         return None
 
-    def Export_Dicom(self,exam, path):
+    def Export_Dicom(self, exam):
         data = exam.GetAcquisitionDataFromDicom()
         SeriesUID = data['SeriesModule']['SeriesInstanceUID']
-        export_path = os.path.join(path,SeriesUID)
+        export_path = os.path.join(self.path, SeriesUID)
         if not os.path.exists(export_path):
             print('making path')
             os.makedirs(export_path)
@@ -117,26 +113,36 @@ class create_RT_Structure():
         for file in files:
             set_progress('{}'.format(file.split('Status_')[-1].split('.txt')[0]))
 
-    def check_folder(self,output_path):
+    def check_folder(self, exam):
+        data = exam.GetAcquisitionDataFromDicom()
+        SeriesUID = data['SeriesModule']['SeriesInstanceUID']
+        output_path = os.path.join(self.base_path, self.roi_name + '_Auto_Contour', 'Output',
+                                   self.patient.PatientID, SeriesUID)
         print(output_path)
         while not os.path.exists(output_path):
             time.sleep(1)
         print('path exists, waiting for file')
-        while not os.path.exists(os.path.join(output_path,'Completed.txt')) and not os.path.exists(os.path.join(output_path,'Failed.txt')):
+        while not os.path.exists(os.path.join(output_path, 'Completed.txt')) and not os.path.exists(
+                os.path.join(output_path, 'Failed.txt')):
             time.sleep(1)
             self.update_progress(output_path)
-        if os.path.exists(os.path.join(output_path,'Completed.txt')):
+        if os.path.exists(os.path.join(output_path, 'Completed.txt')):
             self.import_RT = True
             set_progress('Importing RT Structures')
         return None
 
-    def importRT(self,file_path):
+
+    def importRT(self, exam):
+        data = exam.GetAcquisitionDataFromDicom()
+        SeriesUID = data['SeriesModule']['SeriesInstanceUID']
+        file_path = os.path.join(self.base_path, self.roi_name + '_Auto_Contour', 'Output',
+                                 self.patient.PatientID, SeriesUID)
         try:
-            self.patient.ImportDicomDataFromPath(Path=file_path,CaseName=self.case.CaseName,SeriesFilter={},ImportFilters=[])
+            self.patient.ImportDicomDataFromPath(Path=file_path, CaseName=self.case.CaseName, SeriesFilter={},
+                                                 ImportFilters=[])
         except:
-            pi = self.patient_db.QueryPatientsFromPath(Path=file_path, SearchCriterias={'PatientID': self.MRN})[0]
-            studies = self.patient_db.QueryStudiesFromPath(Path=file_path,
-                                                           SearchCriterias=pi)
+            pi = self.patient_db.QueryPatientsFromPath(Path=file_path, SearchCriterias={'PatientID': self.patient.PatientID})[0]
+            studies = self.patient_db.QueryStudiesFromPath(Path=file_path, SearchCriterias=pi)
             series = []
             for study in studies:
                 series += self.patient_db.QuerySeriesFromPath(Path=file_path,
@@ -145,14 +151,18 @@ class create_RT_Structure():
                                             SeriesOrInstances=series, AllowMismatchingPatientID=True)
         return None
 
-    def cleanout_folder(self,dicom_dir):
+    def cleanout_folder(self, exam):
+        data = exam.GetAcquisitionDataFromDicom()
+        SeriesUID = data['SeriesModule']['SeriesInstanceUID']
+        dicom_dir = os.path.join(self.base_path, self.roi_name + '_Auto_Contour', 'Output', self.patient.PatientID,
+                                 SeriesUID)
         print('Cleaning up: Removing imported DICOMs, please check output folder for result')
         if os.path.exists(dicom_dir):
             files = [i for i in os.listdir(dicom_dir) if not i.startswith('user_')]
             for file in files:
-                os.remove(os.path.join(dicom_dir,file))
+                os.remove(os.path.join(dicom_dir, file))
             un = getpass.getuser()
-            fid = open(os.path.join(dicom_dir,'user_{}.txt'.format(un)),'w+')
+            fid = open(os.path.join(dicom_dir, 'user_{}.txt'.format(un)), 'w+')
             fid.close()
         return None
 
