@@ -47,6 +47,10 @@ class create_RT_Structure():
         roi_name += '_Auto_Contour'
         self.MRN = self.patient.PatientID
         self.base_path = '\\\\mymdafiles\\ou-radonc\\Raystation\\Clinical\\Auto_Contour_Sites\\'
+        try:
+            os.listdir(self.base_path)
+        except:
+            self.base_path = '\\\\mymdafiles\\ou-radonc\\Raystation\\Research\\Auto_Contour_Sites\\'
         #if not check_any_contours(case,exam): Doesn't work the way I want it to
         self.path = os.path.join(self.base_path,roi_name,'Input_3',self.MRN)
         self.patient.Save()

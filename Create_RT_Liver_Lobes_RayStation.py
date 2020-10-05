@@ -39,13 +39,18 @@ class create_RT_Structure():
         roi_name += '_Auto_Contour'
         self.MRN = self.patient.PatientID
         self.base_path = '\\\\mymdafiles\\ou-radonc\\Raystation\\Clinical\\Auto_Contour_Sites\\'
+        try:
+            os.listdir(self.base_path)
+        except:
+            self.base_path = '\\\\mymdafiles\\ou-radonc\\Raystation\\Research\\Auto_Contour_Sites\\'
         #if not check_any_contours(case,exam): Doesn't work the way I want it to
         self.path = os.path.join(self.base_path,roi_name,'Input_3',self.MRN)
         self.rois_in_case = []
         for roi in self.case.PatientModel.RegionsOfInterest:
             self.rois_in_case.append(roi.Name)
         self.patient.Save()
-        actual_roi_names = ['Liver_Segment_{}_BMAProgram0'.format(i) for i in range(1, 9)]
+        actual_roi_names = ['Liver_Segment_{}_BMAProgram3'.format(i) for i in range(1, 5)]
+        actual_roi_names = ['Liver_Segment_5-8_BMAProgram3']
         self.has_contours = True
         for actual_roi_name in actual_roi_names:
             set_progress('Checking to see if {} already has contours'.format(actual_roi_name))
