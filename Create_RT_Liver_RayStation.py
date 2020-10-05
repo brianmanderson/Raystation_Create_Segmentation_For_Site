@@ -64,6 +64,7 @@ class create_RT_Structure():
         if not self.check_has_contours(exam):
             self.patient.Save()
             print(self.path)
+            self.cleanout_folder(exam)
             self.Export_Dicom(exam)
 
     def import_data(self, exam):
