@@ -81,7 +81,6 @@ class create_RT_Structure():
             if self.case.PatientModel.StructureSets[exam.Name].RoiGeometries[self.roi_name +
                                                                              self.version_name].HasContours():
                 return None  # Already have the contours for this patient
-        self.cleanout_folder(exam)
         print('Now waiting for RS to be made')
         self.import_RT = False
         self.check_folder(exam)
