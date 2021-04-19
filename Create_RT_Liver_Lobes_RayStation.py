@@ -15,6 +15,7 @@ class create_RT_Structure():
             self.MRN = self.patient.PatientID
         except:
             xxx = 1
+    
     def ChangePatient(self, MRN):
         print('got here')
         self.MRN = MRN
@@ -27,6 +28,29 @@ class create_RT_Structure():
                 self.MRN = self.patient.PatientID
                 return None
         print('did not find a patient')
+    
+        def check_contours(self, exam):
+        actual_roi_names = ['Liver_Segment_{}_For_Sireesha'.format(i) for i in range(1, 5)]
+        self.has_contours = True
+        for actual_roi_name in actual_roi_names:
+            set_progress('Checking to see if {} already has contours'.format(actual_roi_name))
+            if actual_roi_name in self.rois_in_case:
+                if not self.case.PatientModel.StructureSets[exam.Name].RoiGeometries[actual_roi_name].HasContours():
+                    self.has_contours = False
+                    break
+            else:
+                self.has_contours = False
+                break
+        has_liver = False
+        for actual_roi_name in ['Liver','Liver_BMA_Program_4']:
+            if actual_roi_name in self.rois_in_case:
+                if self.case.PatientModel.StructureSets[exam.Name].RoiGeometries[actual_roi_name].HasContours():
+                    has_liver = True
+                    break
+        if not has_liver:
+            print('You need a contour named Liver or Liver_BMA_Program_4')
+            self.has_contours = True
+    
     def create_RT_Liver(self, exam):
         self.export(exam)
         if not self.has_contours:
@@ -49,26 +73,7 @@ class create_RT_Structure():
         for roi in self.case.PatientModel.RegionsOfInterest:
             self.rois_in_case.append(roi.Name)
         self.patient.Save()
-        actual_roi_names = ['Liver_Segment_{}_BMAProgram3'.format(i) for i in range(1, 5)]
-        self.has_contours = True
-        for actual_roi_name in actual_roi_names:
-            set_progress('Checking to see if {} already has contours'.format(actual_roi_name))
-            if actual_roi_name in self.rois_in_case:
-                if not self.case.PatientModel.StructureSets[exam.Name].RoiGeometries[actual_roi_name].HasContours():
-                    self.has_contours = False
-                    break
-            else:
-                self.has_contours = False
-                break
-        has_liver = False
-        for actual_roi_name in ['Liver','Liver_BMA_Program_4']:
-            if actual_roi_name in self.rois_in_case:
-                if self.case.PatientModel.StructureSets[exam.Name].RoiGeometries[actual_roi_name].HasContours():
-                    has_liver = True
-                    break
-        if not has_liver:
-            print('You need a contour named Liver or Liver_BMA_Program_4')
-            self.has_contours = True
+        self.check_contours(exam=exam)
         if self.has_contours:
             return None
         self.patient.Save()
